@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Tahfizh Pro | Manajemen Ziyadah & Muroja'ah</title>
+    <!-- Font Awesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #f0f7f0;
+            min-height: 100vh;
+        }
+        /* splash / login overlay */
+        .login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #1e3a2f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        .login-card {
+            background: white;
+            border-radius: 32px;
+            padding: 2rem 2rem 2.5rem;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .login-card i {
+            font-size: 3rem;
+            color: #2b7a4b;
+            margin-bottom: 1rem;
+        }
+        .login-card h2 {
+            color: #1e3a2f;
+            margin-bottom: 1.5rem;
+        }
+        .login-card input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #ccc;
+            border-radius: 60px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            outline: none;
+        }
+        .login-card button {
+            background: #2b7a4b;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .error-msg {
+            color: #c0392b;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+        /* main app (hidden until auth) */
+        .app-container {
+            display: none;
+        }
+        /* navbar admin */
+        .admin-nav {
+            background: #1e3a2f;
+            color: white;
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .logo {
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+        .logo span {
+            color: #f9c74f;
+        }
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        /* tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: white;
+            padding: 0.5rem 2rem;
+            border-bottom: 1px solid #d1e0d1;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            font-weight: 600;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #2c5e44;
+        }
+        .tab-btn.active {
+            background: #2b7a4b;
+            color: white;
+        }
+        .panel {
+            padding: 2rem;
+            display: none;
+        }
+        .panel.active-panel {
+            display: block;
+        }
+        /* cards */
+        .stats-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 24px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            flex: 1;
+            min-width: 140px;
+            text-align: center;
+        }
+        .stat-card h4 {
+            font-size: 0.85rem;
+            color: #4a6a5c;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1e3a2f;
+        }
+        table {
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            border-collapse: collapse;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        th, td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8e2;
+        }
+        th {
+            background: #e9f3ec;
+            color: #1e3a2f;
+        }
+        .btn-small {
+            background: #eef2ef;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #2b7a4b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .form-card {
+            background: white;
+            border-radius: 24px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .flex-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+        .flex-form .field {
+            flex: 1;
+            min-width: 150px;
+        }
+        .flex-form label {
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+        select, input {
+            padding: 8px 12px;
+            border-radius: 40px;
+            border: 1px solid #cbd5c6;
+            width: 100%;
+        }
+        .rekap-period {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .period-btn {
+            background: #e9ece9;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .period-btn.active-period {
+            background: #1e3a2f;
+            color: white;
+        }
+        @media (max-width: 700px) {
+            .panel { padding: 1rem; }
+            th, td { font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+        <i class="fas fa-quran"></i>
+        <h2>Akses Admin Tahfizh</h2>
+        <input type="password" id="passwordInput" placeholder="Masukkan password" autocomplete="off">
+        <button id="loginBtn">MASUK</button>
+        <div id="loginError" class="error-msg"></div>
+    </div>
+</div>
+
+<div id="appContainer" class="app-container">
+    <div class="admin-nav">
+        <div class="logo"><i class="fas fa-book-quran"></i> Tahfizh<span>Pro</span></div>
+        <button id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="rekap">📊 Rekap Tahfizh</button>
+        <button class="tab-btn" data-tab="santri">👥 Manajemen Santri & Musyrif</button>
+        <button class="tab-btn" data-tab="setoran">📝 Input Setoran (Ziyadah/Murojaah)</button>
+    </div>
+
+    <!-- Panel REKAP -->
+    <div id="rekapPanel" class="panel active-panel">
+        <div class="rekap-period">
+            <button class="period-btn active-period" data-period="hari">📆 Harian</button>
+            <button class="period-btn" data-period="pekan">📅 Pekan Ini</button>
+            <button class="period-btn" data-period="bulan">🌙 Bulan Ini</button>
+            <button class="period-btn" data-period="tahun">📆 Tahun Ini</button>
+        </div>
+        <div class="stats-grid" id="rekapStats"></div>
+        <div style="overflow-x: auto;">
+            <table id="rekapTable">
+                <thead>
+                    <tr><th>Santri</th><th>Halaqoh</th><th>Musyrif</th><th>Total Ziyadah (halaman)</th><th>Total Murojaah (halaman)</th><th>Total Gabungan</th></tr>
+                </thead>
+                <tbody id="rekapTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Panel MANAJEMEN SANTRI & MUSYRIF -->
+    <div id="santriPanel" class="panel">
+        <div class="form-card">
+            <h3><i class="fas fa-users"></i> Kelola Halaqoh & Musyrif</h3>
+            <div class="flex-form" style="margin-top: 1rem;">
+                <div class="field"><label>Nama Halaqoh</label><input type="text" id="newHalaqohName" placeholder="Misal: Halaqoh Al-Furqon"></div>
+                <div class="field"><label>Musyrif</label><input type="text" id="newMusyrifName" placeholder="Nama Musyrif"></div>
+                <div><button id="addHalaqohBtn" class="btn-primary">+ Tambah Halaqoh & Musyrif</button></div>
+            </div>
+            <hr style="margin: 1rem 0;">
+            <h3><i class="fas fa-user-graduate"></i> Daftar Santri</h3>
+            <div class="flex-form">
+                <div class="field"><label>Nama Santri</label><input type="text" id="santriName"></div>
+                <div class="field"><label>Pilih Halaqoh</label><select id="santriHalaqohSelect"></select></div>
+                <div><button id="addSantriBtn" class="btn-primary">Tambah Santri</button></div>
+            </div>
+            <div style="margin-top: 1.5rem; overflow-x: auto;">
+                <table id="santriTable">
+                    <thead><tr><th>Santri</th><th>Halaqoh</th><th>Musyrif</th><th>Aksi</th></tr></thead>
+                    <tbody id="santriListBody"></tbody>
+                </table>
+            </div>
+            <hr style="margin: 1rem 0;">
+            <h3><i class="fas fa-chalkboard-user"></i> Daftar Musyrif & Halaqoh</h3>
+            <table id="musyrifTable"><thead><tr><th>Halaqoh</th><th>Musyrif</th><th>Aksi</th></tr></thead><tbody id="musyrifListBody"></tbody></table>
+        </div>
+    </div>
+
+    <!-- Panel INPUT SETORAN -->
+    <div id="setoranPanel" class="panel">
+        <div class="form-card">
+            <h3><i class="fas fa-pen-alt"></i> Catat Setoran Harian</h3>
+            <div class="flex-form">
+                <div class="field"><label>Santri</label><select id="setoranSantriSelect"></select></div>
+                <div class="field"><label>Tanggal</label><input type="date" id="setoranDate"></div>
+                <div class="field"><label>Ziyadah (halaman)</label><input type="number" id="ziyadahAmount" value="0" min="0"></div>
+                <div class="field"><label>Murojaah (halaman)</label><input type="number" id="murojaahAmount" value="0" min="0"></div>
+                <div><button id="saveSetoranBtn" class="btn-primary">Simpan Setoran</button></div>
+            </div>
+            <div style="margin-top: 1rem; font-size: 0.8rem; color:#2c5e44;"><i class="fas fa-info-circle"></i> Ziyadah: hafalan baru | Murojaah: pengulangan</div>
+        </div>
+        <div class="form-card">
+            <h4>Riwayat Setoran Terbaru</h4>
+            <div style="overflow-x: auto;"><table id="riwayatSetoranTable"><thead><tr><th>Santri</th><th>Tanggal</th><th>Ziyadah</th><th>Murojaah</th></tr></thead><tbody></tbody></table></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- DATA MODEL (localStorage) ----------
+    let data = {
+        halaqohList: [],      // [{ id, name, musyrif }]
+        santriList: [],       // [{ id, name, halaqohId }]
+        setoranList: []       // [{ id, santriId, date, ziyadah, murojaah }]
+    };
+
+    // Helper
+    function saveToLocal() {
+        localStorage.setItem('tahfizh_data', JSON.stringify(data));
+    }
+    function loadData() {
+        const raw = localStorage.getItem('tahfizh_data');
+        if(raw) {
+            const parsed = JSON.parse(raw);
+            data.halaqohList = parsed.halaqohList || [];
+            data.santriList = parsed.santriList || [];
+            data.setoranList = parsed.setoranList || [];
+        } else {
+            // Data awal contoh
+            data.halaqohList = [
+                { id: "h1", name: "Halaqoh Al-Fajr", musyrif: "Ust. Ahmad" },
+                { id: "h2", name: "Halaqoh An-Nur", musyrif: "Ust. Fatimah" }
+            ];
+            data.santriList = [
+                { id: "s1", name: "Abdullah bin Salim", halaqohId: "h1" },
+                { id: "s2", name: "Aisyah Putri", halaqohId: "h1" },
+                { id: "s3", name: "Hafidz Rahman", halaqohId: "h2" }
+            ];
+            data.setoranList = [
+                { id: "set1", santriId: "s1", date: new Date().toISOString().slice(0,10), ziyadah: 2, murojaah: 5 },
+                { id: "set2", santriId: "s2", date: new Date().toISOString().slice(0,10), ziyadah: 1, murojaah: 3 }
+            ];
+            saveToLocal();
+        }
+    }
+
+    // utils untuk grouping
+    function isSameDay(d1, d2) { return d1 === d2; }
+    function getWeekKey(dateStr) {
+        let d = new Date(dateStr);
+        let startOfYear = new Date(d.getFullYear(), 0, 1);
+        let days = Math.floor((d - startOfYear) / (24*3600*1000));
+        let week = Math.ceil((days + startOfYear.getDay() + 1) / 7);
+        return `${d.getFullYear()}-W${week}`;
+    }
+    function getMonthKey(dateStr) { return dateStr.slice(0,7); }
+    function getYearKey(dateStr) { return dateStr.slice(0,4); }
+
+    // Filter setoran berdasarkan period
+    function filterSetoranByPeriod(period, currentDate = new Date()) {
+        let today = currentDate.toISOString().slice(0,10);
+        let result = [];
+        for(let s of data.setoranList) {
+            if(period === 'hari') {
+                if(s.date === today) result.push(s);
+            } else if(period === 'pekan') {
+                if(getWeekKey(s.date) === getWeekKey(today)) result.push(s);
+            } else if(period === 'bulan') {
+                if(getMonthKey(s.date) === getMonthKey(today)) result.push(s);
+            } else if(period === 'tahun') {
+                if(getYearKey(s.date) === getYearKey(today)) result.push(s);
+            }
+        }
+        return result;
+    }
+
+    // rekap per santri
+    function getRekapByPeriod(period) {
+        let filtered = filterSetoranByPeriod(period);
+        let map = new Map(); // santriId -> { ziyadah, murojaah }
+        data.santriList.forEach(s => { map.set(s.id, { ziyadah:0, murojaah:0, name:s.name, halaqohId:s.halaqohId }); });
+        for(let set of filtered) {
+            let existing = map.get(set.santriId);
+            if(existing) {
+                existing.ziyadah += set.ziyadah;
+                existing.murojaah += set.murojaah;
+            }
+        }
+        let rekapArr = [];
+        for(let [sid, val] of map.entries()) {
+            let santri = data.santriList.find(s => s.id === sid);
+            if(santri) {
+                let halaqoh = data.halaqohList.find(h => h.id === santri.halaqohId);
+                rekapArr.push({
+                    santriName: santri.name,
+                    halaqohName: halaqoh ? halaqoh.name : '-',
+                    musyrif: halaqoh ? halaqoh.musyrif : '-',
+                    ziyadah: val.ziyadah,
+                    murojaah: val.murojaah,
+                    total: val.ziyadah + val.murojaah
+                });
+            }
+        }
+        return rekapArr;
+    }
+
+    // Render rekap panel
+    let currentPeriod = 'hari';
+    function renderRekap() {
+        const rekapData = getRekapByPeriod(currentPeriod);
+        const totalZ = rekapData.reduce((a,b)=>a+b.ziyadah,0);
+        const totalM = rekapData.reduce((a,b)=>a+b.murojaah,0);
+        const totalSantriAktif = rekapData.filter(r=> (r.ziyadah+r.murojaah)>0).length;
+        document.getElementById('rekapStats').innerHTML = `
+            <div class="stat-card"><h4>Total Ziyadah</h4><div class="stat-number">${totalZ}</div><small>halaman</small></div>
+            <div class="stat-card"><h4>Total Murojaah</h4><div class="stat-number">${totalM}</div><small>halaman</small></div>
+            <div class="stat-card"><h4>Total Gabungan</h4><div class="stat-number">${totalZ+totalM}</div><small>halaman</small></div>
+            <div class="stat-card"><h4>Santri Setor</h4><div class="stat-number">${totalSantriAktif}</div><small>dari ${data.santriList.length}</small></div>
+        `;
+        let tbody = document.getElementById('rekapTableBody');
+        tbody.innerHTML = '';
+        rekapData.forEach(r => {
+            let row = `<tr><td>${r.santriName}</td><td>${r.halaqohName}</td><td>${r.musyrif}</td><td>${r.ziyadah}</td><td>${r.murojaah}</td><td><strong>${r.total}</strong></td></tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+        if(rekapData.length===0) tbody.innerHTML = '<tr><td colspan="6">Belum ada data setoran untuk periode ini</td></tr>';
+    }
+
+    // Manajemen UI
+    function refreshSantriMusyrifUI() {
+        // populate santri table
+        let santriBody = document.getElementById('santriListBody');
+        santriBody.innerHTML = '';
+        data.santriList.forEach(s => {
+            let halaqoh = data.halaqohList.find(h => h.id === s.halaqohId);
+            let halaqohName = halaqoh ? halaqoh.name : '-';
+            let musyrif = halaqoh ? halaqoh.musyrif : '-';
+            let row = `<tr><td>${s.name}</td><td>${halaqohName}</td><td>${musyrif}</td><td><button class="btn-small" data-id="${s.id}" data-action="deleteSantri">Hapus</button></td></tr>`;
+            santriBody.insertAdjacentHTML('beforeend', row);
+        });
+        document.querySelectorAll('[data-action="deleteSantri"]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                let id = btn.getAttribute('data-id');
+                if(confirm('Hapus santri ini?')) {
+                    data.santriList = data.santriList.filter(s => s.id !== id);
+                    // setoran yang berkaitan juga dihapus agar tidak orphan
+                    data.setoranList = data.setoranList.filter(set => set.santriId !== id);
+                    saveToLocal();
+                    refreshSantriMusyrifUI();
+                    refreshSetoranDropdowns();
+                    renderRekap();
+                    renderRiwayatSetoran();
+                }
+            });
+        });
+        // Musyrif & Halaqoh table
+        let musyrifBody = document.getElementById('musyrifListBody');
+        musyrifBody.innerHTML = '';
+        data.halaqohList.forEach(h => {
+            let row = `<tr><td>${h.name}</td><td>${h.musyrif}</td><td><button class="btn-small" data-hid="${h.id}" data-action="delHalaqoh">Hapus</button></td></tr>`;
+            musyrifBody.insertAdjacentHTML('beforeend', row);
+        });
+        document.querySelectorAll('[data-action="delHalaqoh"]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                let hid = btn.getAttribute('data-hid');
+                if(confirm('Hapus halaqoh akan menghapus santri yang terkait?')) {
+                    // hapus santri yang memiliki halaqohId ini
+                    data.santriList = data.santriList.filter(s => s.halaqohId !== hid);
+                    data.halaqohList = data.halaqohList.filter(h => h.id !== hid);
+                    saveToLocal();
+                    refreshSantriMusyrifUI();
+                    refreshSetoranDropdowns();
+                    renderRekap();
+                    renderRiwayatSetoran();
+                }
+            });
+        });
+        // dropdown halaqoh di form santri
+        let selectHalaqoh = document.getElementById('santriHalaqohSelect');
+        selectHalaqoh.innerHTML = '';
+        data.halaqohList.forEach(h => {
+            selectHalaqoh.innerHTML += `<option value="${h.id}">${h.name} (Musyrif: ${h.musyrif})</option>`;
+        });
+    }
+
+    function refreshSetoranDropdowns() {
+        let selectSantri = document.getElementById('setoranSantriSelect');
+        selectSantri.innerHTML = '<option value="">-- Pilih Santri --</option>';
+        data.santriList.forEach(s => {
+            selectSantri.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+        });
+    }
+
+    function renderRiwayatSetoran() {
+        let tbody = document.querySelector('#riwayatSetoranTable tbody');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+        let sorted = [...data.setoranList].reverse().slice(0, 20);
+        for(let set of sorted) {
+            let santri = data.santriList.find(s => s.id === set.santriId);
+            let santriName = santri ? santri.name : '?';
+            let row = `<tr><td>${santriName}</td><td>${set.date}</td><td>${set.ziyadah}</td><td>${set.murojaah}</td></tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
+        }
+    }
+
+    // save setoran
+    function saveSetoran() {
+        let santriId = document.getElementById('setoranSantriSelect').value;
+        let date = document.getElementById('setoranDate').value;
+        let ziyadah = parseInt(document.getElementById('ziyadahAmount').value) || 0;
+        let murojaah = parseInt(document.getElementById('murojaahAmount').value) || 0;
+        if(!santriId || !date) {
+            alert("Pilih santri dan tanggal terlebih dahulu");
+            return;
+        }
+        if(ziyadah === 0 && murojaah === 0) {
+            alert("Masukkan minimal 1 halaman Ziyadah atau Murojaah");
+            return;
+        }
+        // cek apakah sudah ada setoran pada tanggal yang sama untuk santri tersebut? 
+        // Kita boleh menambah entri baru (akumulasi per hari via multiple entry)
+        // Agar lebih fleksibel, kita tambah sebagai entri baru (biarkan multiple)
+        let newId = 'set_' + Date.now() + '_' + Math.random();
+        data.setoranList.push({
+            id: newId,
+            santriId: santriId,
+            date: date,
+            ziyadah: ziyadah,
+            murojaah: murojaah
+        });
+        saveToLocal();
+        renderRekap();
+        renderRiwayatSetoran();
+        // reset form
+        document.getElementById('ziyadahAmount').value = 0;
+        document.getElementById('murojaahAmount').value = 0;
+        alert("Setoran berhasil disimpan");
+    }
+
+    // init UI dan event
+    let isLoggedIn = false;
+    const correctPassword = "tahfizh"; // password admin
+
+    function loadApp() {
+        loadData();
+        refreshSantriMusyrifUI();
+        refreshSetoranDropdowns();
+        renderRekap();
+        renderRiwayatSetoran();
+        document.getElementById('setoranDate').value = new Date().toISOString().slice(0,10);
+        // tab logic
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+                btn.classList.add('active');
+                let tabId = btn.getAttribute('data-tab');
+                document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active-panel'));
+                if(tabId === 'rekap') document.getElementById('rekapPanel').classList.add('active-panel');
+                if(tabId === 'santri') document.getElementById('santriPanel').classList.add('active-panel');
+                if(tabId === 'setoran') document.getElementById('setoranPanel').classList.add('active-panel');
+            });
+        });
+        // period buttons
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active-period'));
+                btn.classList.add('active-period');
+                currentPeriod = btn.getAttribute('data-period');
+                renderRekap();
+            });
+        });
+        // tambah halaqoh
+        document.getElementById('addHalaqohBtn').addEventListener('click', () => {
+            let name = document.getElementById('newHalaqohName').value.trim();
+            let musyrif = document.getElementById('newMusyrifName').value.trim();
+            if(!name || !musyrif) { alert("Lengkapi nama halaqoh dan musyrif"); return; }
+            let newId = "h_"+Date.now();
+            data.halaqohList.push({ id: newId, name: name, musyrif: musyrif });
+            saveToLocal();
+            refreshSantriMusyrifUI();
+            document.getElementById('newHalaqohName').value = '';
+            document.getElementById('newMusyrifName').value = '';
+        });
+        document.getElementById('addSantriBtn').addEventListener('click', () => {
+            let name = document.getElementById('santriName').value.trim();
+            let halaqohId = document.getElementById('santriHalaqohSelect').value;
+            if(!name || !halaqohId) { alert("Nama santri dan halaqoh wajib"); return; }
+            let newId = "s_"+Date.now();
+            data.santriList.push({ id: newId, name: name, halaqohId: halaqohId });
+            saveToLocal();
+            refreshSantriMusyrifUI();
+            refreshSetoranDropdowns();
+            renderRekap();
+            document.getElementById('santriName').value = '';
+        });
+        document.getElementById('saveSetoranBtn').addEventListener('click', saveSetoran);
+    }
+
+    // login handler
+    document.getElementById('loginBtn').addEventListener('click', () => {
+        const pwd = document.getElementById('passwordInput').value;
+        if(pwd === correctPassword) {
+            isLoggedIn = true;
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            loadApp();
+        } else {
+            document.getElementById('loginError').innerText = 'Password salah!';
+        }
+    });
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+        isLoggedIn = false;
+        document.getElementById('appContainer').style.display = 'none';
+        document.getElementById('loginOverlay').style.display = 'flex';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('loginError').innerText = '';
+    });
+    // prevent direct access without login 
+</script>
+</body>
+</html>
